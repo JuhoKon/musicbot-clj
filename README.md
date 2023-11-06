@@ -8,6 +8,8 @@ TODO
 
 ## Usage
 
+Create token.txt - file. Put bot token inside it.
+
 FIXME: explanation
 
     $ java -jar clj-music-cord-0.1.0-standalone.jar [args]

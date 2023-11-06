@@ -1,56 +1,67 @@
 (ns clj-music-cord.core
   (:gen-class)
-  (:require [clojure.string :as str])
-  (:import (com.sedmelluq.discord.lavaplayer.player DefaultAudioPlayerManager
-                                                    AudioPlayer
-                                                    AudioLoadResultHandler)
-           (com.sedmelluq.discord.lavaplayer.track.playback MutableAudioFrame)
+  (:require [clojure.java.io :as io]
+            [clojure.string :as str])
+  (:import (com.sedmelluq.discord.lavaplayer.format StandardAudioDataFormats)
+           (com.sedmelluq.discord.lavaplayer.player AudioLoadResultHandler AudioPlayer DefaultAudioPlayerManager)
            (com.sedmelluq.discord.lavaplayer.source AudioSourceManagers)
-           (com.sedmelluq.discord.lavaplayer.format StandardAudioDataFormats)
+           (com.sedmelluq.discord.lavaplayer.track.playback MutableAudioFrame)
            (discord4j.core DiscordClientBuilder)
-           (discord4j.voice AudioProvider)
-           (discord4j.core.event.domain.message MessageCreateEvent)))
+           (discord4j.core.event.domain.message MessageCreateEvent)
+           (discord4j.voice AudioProvider)))
 
-(def gatewaydiscordi (atom {}))
 
 (defn clojure-fn-to-java-function [f]
   (reify java.util.function.Function
     (apply [this x]
       (f x))))
 
-(defn to-java-consumer [provider] ;; fiksumpi tapa tehdä löytyy varmasti
+(defn to-java-consumer [provider]
   (reify java.util.function.Consumer
     (accept [this spec]
       (.setProvider spec provider))))
 
-(defn ping [event player-manager provider scheduler]
-  (let [channel (.. event (getMessage) (getChannel) (block))
-        pong-message (.. channel (createMessage "pong") (block))]
-    pong-message))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn join-voice-channel [event player-manager provider scheduler]
-  (let [member (.. event (getMember) (orElse nil))
-        spec-consumer (to-java-consumer provider)]
-    (when member
-      (let [voice-state (.. member (getVoiceState) (block))]
-        (when voice-state
-          (let [channel (.. voice-state (getChannel) (block))]
-            (when channel
-              (.block (.join channel spec-consumer)))))))))
+(def discord-gateway-atom (atom nil))
+(def player-manager-atom (atom nil))
+(def provider-atom (atom nil))
+(def scheduler-atom (atom nil))
+(def player-atom (atom nil))
+(def current-text-channel-atom (atom nil))
+(def current-voice-channel-atom (atom nil))
 
-(defn leave-voice-channel [event player-manager provider scheduler]
-  (let [member (.. event (getMember) (orElse nil))]
-    (when member
-      (let [voice-state (.. member (getVoiceState) (block))]
-        (when voice-state
-          (let [channel (.. voice-state (getChannel) (block))]
-            (when channel
-              (.. channel (sendDisconnectVoiceState) (block)))))))))
+(defn send-message-to-channel! [msg]
+  (.. @current-text-channel-atom (createMessage msg) (block)))
 
-(defn play-track [event player-manager provider scheduler]
+(defn ping [event]
+  (send-message-to-channel! "pong!"))
+
+(defn join-voice-channel [event]
+  (let [spec-consumer (to-java-consumer @provider-atom)]
+    (.. @current-voice-channel-atom (join spec-consumer) (block))))
+
+(defn leave-voice-channel [event]
+  (.. @current-voice-channel-atom (sendDisconnectVoiceState) (block)))
+
+(defn is-valid-url? [str]
+  (try
+    (java.net.URL. str)
+    true
+    (catch Exception e
+      false)))
+
+(defn play-track [event]
   (let [content (.. event (getMessage) (getContent))
-        url (second (str/split content #" "))]
-    (.loadItem player-manager url scheduler)))
+        url (if (is-valid-url? content)
+              content
+              (str "ytsearch: " (str/join " " (rest (str/split content #" ")))))]
+    (send-message-to-channel! "Loading track...")
+    (.. @player-manager-atom (loadItem url @scheduler-atom))))
+
+(defn stop-track [event]
+  (send-message-to-channel! "Stopping music...")
+  (.. @player-atom (stopTrack)))
 
 (defn create-lava-player-audio-provider [^AudioPlayer player]
   (let [buffer (java.nio.ByteBuffer/allocate (.maximumChunkSize (StandardAudioDataFormats/DISCORD_OPUS)))
@@ -63,13 +74,56 @@
             (.flip buffer))
           did-provide)))))
 
+(defn get-voice-channel [event]
+  (let [member (.. event (getMember) (orElse nil))]
+    (when member
+      (let [voice-state (.. member (getVoiceState) (block))]
+        (when voice-state
+          (let [channel (.. voice-state (getChannel) (block))]
+            (when channel
+              channel)))))))
+
+(defn subscribe-to-message-events [commands]
+  (let [dispatcher (.getEventDispatcher @discord-gateway-atom)]
+    (-> (.on dispatcher MessageCreateEvent ;; TODO handle bot leaving and joining voice channel -> keep status in an atom
+             (clojure-fn-to-java-function
+              (fn [event]
+                (let [content (.. event (getMessage) (getContent))
+                      text-channel (.. event (getMessage) (getChannel) (block))
+                      voice-channel (get-voice-channel event)]
+                  (reset! current-text-channel-atom text-channel)
+                  (reset! current-voice-channel-atom voice-channel)
+                  (doseq [[key command] commands]
+                    (when (str/starts-with? content (str "!" key))
+                      (command event)))))))
+        .subscribe)))
+
+(def commands
+  {"ping" ping
+   "join" join-voice-channel
+   "leave" leave-voice-channel
+   "play" play-track
+   "stop" stop-track})
+
 (defn create-track-scheduler [^AudioPlayer player]
   (proxy [AudioLoadResultHandler] []
     (trackLoaded [track]
-      (.playTrack player track))
-    (playlistLoaded [playlist] nil)
-    (noMatches [] nil)
-    (loadFailed [exception] nil)))
+      (let [info (.getInfo track)]
+        (send-message-to-channel! (str "Starting playing: " (.title info)))
+        (.playTrack player track)))
+    (playlistLoaded [playlist] ;; handle actual playlist load. Implement queue?
+      (when (.isSearchResult playlist)
+        (let [tracks (.getTracks playlist)
+              first-track (first tracks)
+              info (.getInfo first-track)]
+          (send-message-to-channel! (str "Starting playing: " (.title info)))
+          (.playTrack player first-track))))
+    (noMatches []
+      (send-message-to-channel! "No matches :(")
+      (println "NO MATCHES"))
+    (loadFailed [exception]
+      (send-message-to-channel! "Load failed :(")
+      (println "LOAD FAILED" exception))))
 
 (defn setup-audio-components []
   (let [player-manager (DefaultAudioPlayerManager.)
@@ -84,30 +138,26 @@
       .login
       .block))
 
-(defn subscribe-to-message-events [player-manager provider scheduler client commands]
-  (let [dispatcher (.getEventDispatcher client)]
-    (-> (.on dispatcher MessageCreateEvent
-             (clojure-fn-to-java-function
-              (fn [event]
-                (let [content (.. event (getMessage) (getContent))]
-                  (doseq [[key command] commands]
-                    (when (str/starts-with? content (str "!" key))
-                      (command event player-manager provider scheduler)))))))
-        .subscribe)))
+(defn read-text-from-file [file-path]
+  (with-open [reader (io/reader file-path)]
+    (apply str (line-seq reader))))
 
 (defn -main
   [& args]
   (let [[player-manager player provider] (setup-audio-components)
         scheduler (create-track-scheduler player)
-        _ (reset! gatewaydiscordi
-                  (startup "bot-token"))]
-    (subscribe-to-message-events player-manager provider scheduler @gatewaydiscordi {"ping" ping
-                                                                                     "join" join-voice-channel
-                                                                                     "leave" leave-voice-channel
-                                                                                     "play" play-track})))
+        token (str (read-text-from-file "token.txt"))]
+
+    (reset! discord-gateway-atom (startup token))
+    (reset! player-manager-atom player-manager)
+    (reset! player-atom player)
+    (reset! provider-atom provider)
+    (reset! scheduler-atom scheduler)
+
+    (subscribe-to-message-events commands)))
 
 (comment
   (-main)
-  (.. @gatewaydiscordi (logout) (block))
+  (.. @discord-gateway-atom (logout) (block))
   ;
   )
