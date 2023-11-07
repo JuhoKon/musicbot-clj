@@ -52,3 +52,11 @@
     (if track
       (channel-commands/send-message-to-channel! (str "Now playing: " (formatters/title-from-info (.. track (getInfo)) true)))
       (channel-commands/send-message-to-channel! "Not playing anything."))))
+
+(defn queue-status [event]
+  (if (empty?  @atoms/normal-queue)
+    (channel-commands/send-message-to-channel! "The queue is empty.")
+    (do
+      (channel-commands/send-message-to-channel! (str "There are " (count @atoms/normal-queue) "tracks. Showing the next 15 tracks :^)"))
+      (channel-commands/send-message-to-channel!
+       (str/join "\n > " (map (fn [track] (formatters/title-from-info (.. track (getInfo)) false)) (take 15 @atoms/normal-queue)))))))

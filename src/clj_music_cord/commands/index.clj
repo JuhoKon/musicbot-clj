@@ -11,4 +11,5 @@
    "nowplaying" audio-commands/now-playing
    "playnext" audio-commands/play-track-next
    "stop" audio-commands/stop-and-clear-queue
-   "skip" audio-commands/skip})
+   "skip" audio-commands/skip
+   "queue" audio-commands/queue-status})
