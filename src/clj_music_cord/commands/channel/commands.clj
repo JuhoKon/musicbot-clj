@@ -5,11 +5,11 @@
 (defn send-message-to-channel! [msg]
   (.. @atoms/current-text-channel-atom (createMessage (str "> " msg)) (block)))
 
-(defn join-voice-channel [event]
+(defn join-voice-channel [_]
   (let [spec-consumer (java-helpers/to-java-consumer @atoms/provider-atom)]
     (.. @atoms/current-voice-channel-atom (join spec-consumer) (block))))
 
-(defn leave-voice-channel [event]
+(defn leave-voice-channel [_]
   (send-message-to-channel! "Leaving...")
   (.. @atoms/current-voice-channel-atom (sendDisconnectVoiceState) (block)))
 

@@ -3,7 +3,8 @@
             [clj-music-cord.shared.atoms :as atoms]
             [clojure.string :as str]
             [clj-music-cord.helpers.queue :as queue]
-            [clj-music-cord.helpers.formatters :as formatters]))
+            [clj-music-cord.helpers.formatters :as formatters]
+            [clj-music-cord.helpers.d4j :as d4j-helpers]))
 
 (defn is-valid-url? [str]
   (try
@@ -12,28 +13,27 @@
     (catch Exception _
       false)))
 
-(defn play-track [event]
+(defn play-track-fn [event handler]
   (let [content (.. event getMessage getContent)
         content-parts (rest (str/split content #" "))
         url (if (is-valid-url? (apply str content-parts))
               (apply str content-parts)
               (str "ytsearch: " (str/join " " content-parts)))]
+    (when-not (d4j-helpers/is-bot-in-channel)
+      (channel-commands/join-voice-channel nil))
     (channel-commands/send-message-to-channel! "Loading track(s)...")
-    (.. @atoms/player-manager-atom (loadItem url @atoms/load-handler-atom))))
+    (.. @atoms/player-manager-atom (loadItem url handler))))
+
+(defn play-track [event]
+  (play-track-fn event @atoms/load-handler-atom))
+
+(defn play-track-next [event]
+  (play-track-fn event @atoms/load-handler-atom-playnext))
 
 (defn stop-and-clear-queue [_]
   (channel-commands/send-message-to-channel! "Stopping music and clearing queue...")
   (queue/reset-queue)
   (.. @atoms/player-atom (stopTrack)))
-
-(defn play-track-next [event]
-  (let [content (.. event getMessage getContent)
-        content-parts (rest (str/split content #" "))
-        url (if (is-valid-url? (apply str content-parts))
-              (apply str content-parts)
-              (str "ytsearch: " (str/join " " content-parts)))]
-    (channel-commands/send-message-to-channel! "Loading track(s)...")
-    (.. @atoms/player-manager-atom (loadItem url @atoms/load-handler-atom-playnext))))
 
 (defn skip [event]
   (channel-commands/send-message-to-channel! "Skipping current track...")
