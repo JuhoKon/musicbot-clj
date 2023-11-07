@@ -1,5 +1,4 @@
 (ns clj-music-cord.audio-components.scheduler
-  (:require [clj-music-cord.commands.channel.commands :as channel-commands])
   (:import (com.sedmelluq.discord.lavaplayer.player.event AudioEventAdapter)
            (com.sedmelluq.discord.lavaplayer.track AudioTrackEndReason)))
 

@@ -7,7 +7,7 @@
   (try
     (java.net.URL. str)
     true
-    (catch Exception e
+    (catch Exception _
       false)))
 
 (defn play-track [event]
@@ -20,6 +20,12 @@
     (channel-commands/send-message-to-channel! "Loading track...")
     (.. @atoms/player-manager-atom (loadItem url @atoms/load-handler-atom))))
 
-(defn stop-track [event]
+(defn stop-track [_]
   (channel-commands/send-message-to-channel! "Stopping music...")
   (.. @atoms/player-atom (stopTrack)))
+
+;; For playnext just provide different loadhandler?
+;; start using startTrack. has flag for interrupting
+
+;; skip? is essentially playnext from the queue
+;; (.playTrack player (get-song-from-queue))

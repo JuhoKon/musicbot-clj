@@ -12,7 +12,7 @@
     (apply str (line-seq reader))))
 
 (defn -main
-  [& args]
+  [& _]
   (let [[player-manager player provider load-handler scheduler] (setup-audio-components)
         token (str (read-text-from-file "token.txt"))]
 
