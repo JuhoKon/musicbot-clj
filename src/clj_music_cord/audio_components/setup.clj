@@ -1,7 +1,6 @@
 (ns clj-music-cord.audio-components.setup
   (:require [clj-music-cord.audio-components.audio-provider :as audio-provider]
-            [clj-music-cord.audio-components.result-handlers.play :as load-handler-play]
-            [clj-music-cord.audio-components.result-handlers.playnext :as load-handler-playnext]
+            [clj-music-cord.audio-components.result-handler :as load-handler]
             [clj-music-cord.audio-components.scheduler :as scheduler])
   (:import (com.sedmelluq.discord.lavaplayer.player DefaultAudioPlayerManager)
            (com.sedmelluq.discord.lavaplayer.source AudioSourceManagers)))
@@ -12,7 +11,7 @@
         scheduler scheduler/track-scheduler
         _ (.addListener player scheduler)
         provider (audio-provider/create-lava-player-audio-provider player)
-        load-handler-play (load-handler-play/load-handler player)
-        load-handler-playnext (load-handler-playnext/load-handler player)]
+        load-handler-play (load-handler/load-handler player false)
+        load-handler-playnext (load-handler/load-handler player true)]
     (.. AudioSourceManagers (registerRemoteSources player-manager))
     [player-manager player scheduler provider load-handler-play load-handler-playnext]))
