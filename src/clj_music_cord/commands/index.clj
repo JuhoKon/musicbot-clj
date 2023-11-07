@@ -14,7 +14,7 @@
    {:prefix "stop" :cmd-fn audio-commands/stop-and-clear-queue :desc "Stops playing music and clears queue."}
    {:prefix "skip" :cmd-fn audio-commands/skip :desc "Skips current track."}
    {:prefix "queue" :cmd-fn audio-commands/queue-status :desc "Shows next (15) tracks in the queue."}
-   {:prefix "repeat" :cmd-fn audio-commands/toggle-repeat :desc "Toggles repeat-mode. (keeps repeating same song)"}])
+   {:prefix "repeat" :cmd-fn audio-commands/toggle-repeat :desc "Repeats the queue."}])
 
 (defn help [_]
   (channel-commands/send-message-to-channel! "All available commands:")

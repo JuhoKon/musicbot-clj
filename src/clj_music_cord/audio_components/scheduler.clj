@@ -15,12 +15,16 @@
 
     (onTrackEnd [player track endReason]
       (when (.mayStartNext endReason)
-        (if @atoms/repeat-mode-atom
-          (.startTrack player (.makeClone track) true)
-          (when-not (empty? @atoms/queue-atom)
-            (let [song (first @atoms/queue-atom)
-                  info (.getInfo song)]
-              (.startTrack player (.makeClone song) true)
+        (if (empty? @atoms/queue-atom)
+          (when @atoms/repeat-mode-atom
+            (.startTrack player (.makeClone track) true))
+          (let [song (first @atoms/queue-atom)
+                info (.getInfo song)]
+            (.startTrack player (.makeClone song) true)
+            (if @atoms/repeat-mode-atom
+              (do
+                (queue/remove-first-from-queue!)
+                (queue/add-song-to-queue track))
               (queue/remove-first-from-queue!))))))
 
     (onTrackException [player track exception])
