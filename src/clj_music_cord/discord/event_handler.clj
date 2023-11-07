@@ -17,9 +17,9 @@
                       voice-channel (d4j-helpers/get-voice-channel event)]
                   (reset! atoms/current-text-channel-atom text-channel)
                   (reset! atoms/current-voice-channel-atom voice-channel)
-                  (doseq [[key command] commands]
-                    (when (= (first (str/split content #" ")) (str "!" key))
-                      (command event)))
+                  (doseq [{:keys [prefix cmd-fn]} commands]
+                    (when (= (first (str/split content #" ")) (str "!" prefix))
+                      (cmd-fn event)))
                   (Mono/empty)))))
         .subscribe)
     (-> (.on dispatcher VoiceStateUpdateEvent
