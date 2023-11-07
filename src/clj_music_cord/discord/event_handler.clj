@@ -16,6 +16,6 @@
                   (reset! atoms/current-text-channel-atom text-channel)
                   (reset! atoms/current-voice-channel-atom voice-channel)
                   (doseq [[key command] commands]
-                    (when (str/starts-with? content (str "!" key))
+                    (when (= (first (str/split content #" ")) (str "!" key))
                       (command event)))))))
         .subscribe)))

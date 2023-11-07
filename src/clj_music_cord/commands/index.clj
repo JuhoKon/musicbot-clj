@@ -7,4 +7,6 @@
    "join" channel-commands/join-voice-channel
    "leave" channel-commands/leave-voice-channel
    "play" audio-commands/play-track
-   "stop" audio-commands/stop-track})
+   "playnext" audio-commands/play-track-next
+   "stop" audio-commands/stop-and-clear-queue
+   "skip" audio-commands/skip})

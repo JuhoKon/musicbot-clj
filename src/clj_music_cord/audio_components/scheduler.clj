@@ -1,6 +1,9 @@
 (ns clj-music-cord.audio-components.scheduler
   (:import (com.sedmelluq.discord.lavaplayer.player.event AudioEventAdapter)
-           (com.sedmelluq.discord.lavaplayer.track AudioTrackEndReason)))
+           (com.sedmelluq.discord.lavaplayer.track AudioTrackEndReason))
+  (:require [clj-music-cord.commands.channel.commands :as channel-commands]
+            [clj-music-cord.shared.atoms :as atoms]
+            [clj-music-cord.helpers.queue :as queue]))
 
 (def track-scheduler
   (proxy [AudioEventAdapter] []
@@ -15,27 +18,11 @@
       )
     (onTrackEnd [player track endReason]
       (when (.mayStartNext endReason)
-        ;; Start next track
-        )
-
-      ;; Handle different endReason cases
-      (condp = (.reason endReason)
-        (AudioTrackEndReason/FINISHED)
-        ;; A track finished or died by an exception (mayStartNext = true).
-
-        (AudioTrackEndReason/LOAD_FAILED)
-        ;; Loading of a track failed (mayStartNext = true).
-
-        (AudioTrackEndReason/STOPPED)
-        ;; The player was stopped.
-
-        (AudioTrackEndReason/REPLACED)
-        ;; Another track started playing while this had not finished
-
-        (AudioTrackEndReason/CLEANUP)
-        ;; Player hasn't been queried for a while; you can put a
-        ;; clone of this back to your queue
-        ))
+        (when-not (empty? @atoms/normal-queue)
+          (let [song (first @atoms/normal-queue)
+                info (.getInfo song)]
+            (.startTrack player (.makeClone song) true)
+            (queue/remove-first-from-queue!)))))
     (onTrackException [player track exception]
       ;; An already playing track threw an exception (track end event will still be received separately)
       )

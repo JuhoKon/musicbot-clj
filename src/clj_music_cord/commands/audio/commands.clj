@@ -1,7 +1,8 @@
 (ns clj-music-cord.commands.audio.commands
   (:require [clj-music-cord.commands.channel.commands :as channel-commands]
             [clj-music-cord.shared.atoms :as atoms]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [clj-music-cord.helpers.queue :as queue]))
 
 (defn is-valid-url? [str]
   (try
@@ -14,18 +15,26 @@
   (let [content (.. event getMessage getContent)
         content-parts (rest (str/split content #" "))
         url (if (is-valid-url? (apply str content-parts))
-              content
+              (apply str content-parts)
               (str "ytsearch: " (str/join " " content-parts)))]
-    (channel-commands/send-message-to-channel! url)
     (channel-commands/send-message-to-channel! "Loading track...")
     (.. @atoms/player-manager-atom (loadItem url @atoms/load-handler-atom))))
 
-(defn stop-track [_]
-  (channel-commands/send-message-to-channel! "Stopping music...")
+(defn stop-and-clear-queue [_]
+  (channel-commands/send-message-to-channel! "Stopping music and clearing queue...")
+  (queue/reset-queue)
   (.. @atoms/player-atom (stopTrack)))
 
-;; For playnext just provide different loadhandler?
-;; start using startTrack. has flag for interrupting
+(defn play-track-next [event]
+  (let [content (.. event getMessage getContent)
+        content-parts (rest (str/split content #" "))
+        url (if (is-valid-url? (apply str content-parts))
+              (apply str content-parts)
+              (str "ytsearch: " (str/join " " content-parts)))]
+    (channel-commands/send-message-to-channel! "Loading track...")
+    (.. @atoms/player-manager-atom (loadItem url @atoms/load-handler-atom-playnext))))
 
-;; skip? is essentially playnext from the queue
-;; (.playTrack player (get-song-from-queue))
+(defn skip [event]
+  (channel-commands/send-message-to-channel! "Skipping current track...")
+  (.. @atoms/player-atom (playTrack (first @atoms/normal-queue)))
+  (queue/remove-first-from-queue!))
