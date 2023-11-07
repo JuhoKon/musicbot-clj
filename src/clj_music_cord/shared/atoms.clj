@@ -10,5 +10,6 @@
 (def track-scheduler (atom nil))
 
 (def current-text-channel-atom (atom nil))
+(def current-voice-channel-atom (atom nil))
 
 (def normal-queue (atom (counted-double-list)))
