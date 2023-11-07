@@ -11,10 +11,12 @@
       false)))
 
 (defn play-track [event]
-  (let [content (.. event (getMessage) (getContent))
-        url (if (is-valid-url? content)
+  (let [content (.. event getMessage getContent)
+        content-parts (rest (str/split content #" "))
+        url (if (is-valid-url? (apply str content-parts))
               content
-              (str "ytsearch: " (str/join " " (rest (str/split content #" ")))))]
+              (str "ytsearch: " (str/join " " content-parts)))]
+    (channel-commands/send-message-to-channel! url)
     (channel-commands/send-message-to-channel! "Loading track...")
     (.. @atoms/player-manager-atom (loadItem url @atoms/load-handler-atom))))
 

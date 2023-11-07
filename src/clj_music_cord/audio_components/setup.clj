@@ -8,8 +8,9 @@
 (defn setup-audio-components []
   (let [player-manager (DefaultAudioPlayerManager.)
         player (.createPlayer player-manager)
-        _ (.addListener player (scheduler/create-track-scheduler))
+        scheduler scheduler/track-scheduler
+        _ (.addListener player scheduler)
         provider (audio-provider/create-lava-player-audio-provider player)
         load-handler (load-result-handler/create-load-result-handler player)]
     (.. AudioSourceManagers (registerRemoteSources player-manager))
-    [player-manager player provider load-handler]))
+    [player-manager player provider load-handler scheduler]))

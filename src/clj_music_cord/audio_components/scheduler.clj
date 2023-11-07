@@ -1,17 +1,9 @@
 (ns clj-music-cord.audio-components.scheduler
-  (:import (com.sedmelluq.discord.lavaplayer.format StandardAudioDataFormats)
-           (com.sedmelluq.discord.lavaplayer.player AudioLoadResultHandler AudioPlayer DefaultAudioPlayerManager)
-           (com.sedmelluq.discord.lavaplayer.player.event AudioEventAdapter)
-           (com.sedmelluq.discord.lavaplayer.source AudioSourceManagers)
-           (com.sedmelluq.discord.lavaplayer.track.playback MutableAudioFrame)
-           (com.sedmelluq.discord.lavaplayer.track AudioTrackEndReason)
-           (discord4j.core DiscordClientBuilder)
-           (discord4j.core.event.domain.message MessageCreateEvent)
-           (discord4j.voice AudioProvider)))
+  (:require [clj-music-cord.commands.channel.commands :as channel-commands])
+  (:import (com.sedmelluq.discord.lavaplayer.player.event AudioEventAdapter)
+           (com.sedmelluq.discord.lavaplayer.track AudioTrackEndReason)))
 
-
-(defn create-track-scheduler
-  []
+(def track-scheduler
   (proxy [AudioEventAdapter] []
     (onPlayerPause [player]
       ;; Player was paused
