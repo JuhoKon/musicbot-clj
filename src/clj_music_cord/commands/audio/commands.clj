@@ -45,3 +45,9 @@
   (do
     (queue/shuffle-queue)
     (channel-commands/send-message-to-channel! (str "Shuffled " (count @atoms/normal-queue) " tracks!"))))
+
+(defn now-playing [event]
+  (let [track (.. @atoms/player-atom (getPlayingTrack))]
+    (if track
+      (channel-commands/send-message-to-channel! (str "Now playing: " (.title (.. track (getInfo)))))
+      (channel-commands/send-message-to-channel! "Not playing anything."))))
