@@ -19,3 +19,6 @@
 
 (defn reset-queue []
   (reset! atoms/normal-queue (counted-double-list)))
+
+(defn shuffle-queue []
+  (swap! atoms/normal-queue #(reduce conj (counted-double-list) (shuffle (vec %)))))

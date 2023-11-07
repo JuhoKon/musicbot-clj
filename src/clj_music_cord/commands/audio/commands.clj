@@ -38,3 +38,10 @@
   (channel-commands/send-message-to-channel! "Skipping current track...")
   (.. @atoms/player-atom (playTrack (first @atoms/normal-queue)))
   (queue/remove-first-from-queue!))
+
+(defn shuffle-queue [event]
+  (if (empty? @atoms/normal-queue)
+    (channel-commands/send-message-to-channel! "Queue is empty, won't shuffle an empty list :^)"))
+  (do
+    (queue/shuffle-queue)
+    (channel-commands/send-message-to-channel! (str "Shuffled " (count @atoms/normal-queue) " tracks!"))))
