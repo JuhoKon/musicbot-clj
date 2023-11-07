@@ -60,7 +60,7 @@
   (if (empty?  @atoms/queue-atom)
     (channel-commands/send-message-to-channel! "The queue is empty.")
     (do
-      (channel-commands/send-message-to-channel! (str "Queue has " (count @atoms/queue-atom) " tracks. Showing the next 15 tracks :^)"))
+      (channel-commands/send-message-to-channel! (str "Queue has " (count @atoms/queue-atom) " tracks. Showing the next 15 tracks if available :^)"))
       (channel-commands/send-message-to-channel!
        (str/join "\n > " (map (fn [track] (formatters/title-from-track track false)) (take 15 @atoms/queue-atom)))))))
 
