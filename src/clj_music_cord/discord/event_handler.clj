@@ -2,11 +2,12 @@
   (:require [clj-music-cord.helpers.java-helpers :as java-helpers]
             [clj-music-cord.shared.atoms :as atoms]
             [clojure.string :as str])
-  (:import (discord4j.core.event.domain.message MessageCreateEvent)))
+  (:import (discord4j.core.event.domain.message MessageCreateEvent)
+           (reactor.core.publisher Mono)))
 
 (defn subscribe-to-message-events [commands]
   (let [dispatcher (.getEventDispatcher @atoms/discord-gateway-atom)]
-    (-> (.on dispatcher MessageCreateEvent ;; TODO handle bot leaving and joining voice channel -> keep status in an atom
+    (-> (.on dispatcher MessageCreateEvent
              (java-helpers/clojure-fn-to-java-function
               (fn [event]
                 (let [content (.. event (getMessage) (getContent))
@@ -14,5 +15,6 @@
                   (reset! atoms/current-text-channel-atom text-channel)
                   (doseq [[key command] commands]
                     (when (= (first (str/split content #" ")) (str "!" key))
-                      (command event)))))))
+                      (command event)))
+                  (Mono/empty)))))
         .subscribe)))
