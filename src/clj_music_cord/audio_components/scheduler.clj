@@ -7,15 +7,12 @@
 
 (def track-scheduler
   (proxy [AudioEventAdapter] []
-    (onPlayerPause [player]
-      ;; Player was paused
-      )
-    (onPlayerResume [player]
-      ;; Player was resumed
-      )
-    (onTrackStart [player track]
-      ;; A track started playing
-      )
+    (onPlayerPause [player])
+
+    (onPlayerResume [player])
+
+    (onTrackStart [player track])
+
     (onTrackEnd [player track endReason]
       (when (.mayStartNext endReason)
         (when-not (empty? @atoms/normal-queue)
@@ -23,9 +20,12 @@
                 info (.getInfo song)]
             (.startTrack player (.makeClone song) true)
             (queue/remove-first-from-queue!)))))
-    (onTrackException [player track exception]
-      ;; An already playing track threw an exception (track end event will still be received separately)
-      )
+
+    (onTrackException [player track exception])
+
     (onTrackStuck [player track thresholdMs]
-      ;; Audio track has been unable to provide us any audio; might want to just start a new track
-      )))
+      (when-not (empty? @atoms/normal-queue)
+        (let [song (first @atoms/normal-queue)
+              info (.getInfo song)]
+          (.startTrack player (.makeClone song) true)
+          (queue/remove-first-from-queue!))))))
