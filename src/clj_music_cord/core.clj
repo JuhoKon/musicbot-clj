@@ -13,17 +13,11 @@
 
 (defn -main
   [& _]
-  (let [[player-manager player scheduler provider load-handler-play load-handler-playnext] (setup-audio-components)
+  (let [audio-components (setup-audio-components)
         token (str (read-text-from-file "token.txt"))
         client (discord-startup/startup token)]
 
-    (reset! atoms/discord-gateway-atom client)
-    (reset! atoms/player-manager-atom player-manager)
-    (reset! atoms/player-atom player)
-    (reset! atoms/track-scheduler-atom scheduler)
-    (reset! atoms/provider-atom provider)
-    (reset! atoms/load-handler-atom load-handler-play)
-    (reset! atoms/load-handler-atom-playnext load-handler-playnext)
+    (apply atoms/set-atoms! (conj audio-components client))
     (discord-event-handler/subscribe-to-message-events commands/commands)
     (-> client
         (.onDisconnect)
@@ -31,6 +25,5 @@
 
 (comment
   (-main)
-  (.. @atoms/discord-gateway-atom (logout) (block))
   ;
   )
