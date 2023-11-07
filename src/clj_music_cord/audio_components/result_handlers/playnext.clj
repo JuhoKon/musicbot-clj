@@ -8,34 +8,32 @@
 (defn load-handler [^AudioPlayer player]
   (proxy [AudioLoadResultHandler] []
     (trackLoaded [track]
-      (let [info (.getInfo track)]
-        (if (.getPlayingTrack player)
-          (do
-            (channel-commands/send-message-to-channel! (str "Adding to the top of the queue: " (formatters/title-from-info info)))
-            (queue/add-song-to-queue-front track))
-          (do
-            (channel-commands/send-message-to-channel! (str "Start playing: " (formatters/title-from-info info)))
-            (.startTrack player track true)))))
+      (if (.getPlayingTrack player)
+        (do
+          (channel-commands/send-message-to-channel! (str "Adding to the top of the queue: " (formatters/title-from-track track)))
+          (queue/add-song-to-queue-front track))
+        (do
+          (channel-commands/send-message-to-channel! (str "Start playing: " (formatters/title-from-track track)))
+          (.startTrack player track true))))
 
     (playlistLoaded [playlist]
       (let [tracks (.getTracks playlist)
-            first-track (first tracks)
-            info (.getInfo first-track)]
+            first-track (first tracks)]
         (if (.isSearchResult playlist)
           (do
             (if (.getPlayingTrack player)
               (do
-                (channel-commands/send-message-to-channel! (str "Adding to the top of the queue: " (formatters/title-from-info info)))
+                (channel-commands/send-message-to-channel! (str "Adding to the top of the queue: " (formatters/title-from-track first-track)))
                 (queue/add-song-to-queue-front first-track))
               (do
-                (channel-commands/send-message-to-channel! (str "Start playing: " (formatters/title-from-info info)))
+                (channel-commands/send-message-to-channel! (str "Start playing: " (formatters/title-from-track first-track)))
                 (.startTrack player first-track true))))
           (if (.getPlayingTrack player)
             (do
               (channel-commands/send-message-to-channel! (str "Inserting tracks to the queue: " (count tracks)))
               (queue/add-playlist-to-queue-front tracks))
             (do
-              (channel-commands/send-message-to-channel! (str "Playing first song from the playlist: " (formatters/title-from-info info)))
+              (channel-commands/send-message-to-channel! (str "Playing first song from the playlist: " (formatters/title-from-track first-track)))
               (.startTrack player first-track true)
               (channel-commands/send-message-to-channel! (str "Add rest of the playlist to queue: " (count (rest tracks))))
               (queue/add-playlist-to-queue-front (rest tracks)))))))

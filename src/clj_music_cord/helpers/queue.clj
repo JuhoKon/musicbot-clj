@@ -3,22 +3,22 @@
   (:use [clojure.data.finger-tree :only [counted-double-list conjl]]))
 
 (defn remove-first-from-queue! []
-  (swap! atoms/normal-queue rest))
+  (swap! atoms/queue-atom rest))
 
 (defn add-playlist-to-queue [tracks]
-  (swap! atoms/normal-queue (fn [value] (reduce conj value tracks))))
+  (swap! atoms/queue-atom (fn [value] (reduce conj value tracks))))
 
 (defn add-song-to-queue [track]
-  (swap! atoms/normal-queue conj track))
+  (swap! atoms/queue-atom conj track))
 
 (defn add-playlist-to-queue-front [tracks]
-  (swap! atoms/normal-queue (fn [value] (reduce conjl value tracks))))
+  (swap! atoms/queue-atom (fn [value] (reduce conjl value tracks))))
 
 (defn add-song-to-queue-front [track]
-  (swap! atoms/normal-queue conjl track))
+  (swap! atoms/queue-atom conjl track))
 
 (defn reset-queue []
-  (reset! atoms/normal-queue (counted-double-list)))
+  (reset! atoms/queue-atom (counted-double-list)))
 
 (defn shuffle-queue []
-  (swap! atoms/normal-queue #(reduce conj (counted-double-list) (shuffle (vec %)))))
+  (swap! atoms/queue-atom #(reduce conj (counted-double-list) (shuffle (vec %)))))

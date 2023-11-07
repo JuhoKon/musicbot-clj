@@ -13,7 +13,8 @@
    {:prefix "playnext" :cmd-fn audio-commands/play-track-next :desc "Play track (from url or title). Can be playlist. Adds tracks in front of the queue."}
    {:prefix "stop" :cmd-fn audio-commands/stop-and-clear-queue :desc "Stops playing music and clears queue."}
    {:prefix "skip" :cmd-fn audio-commands/skip :desc "Skips current track."}
-   {:prefix "queue" :cmd-fn audio-commands/queue-status :desc "Shows next (15) tracks in the queue."}])
+   {:prefix "queue" :cmd-fn audio-commands/queue-status :desc "Shows next (15) tracks in the queue."}
+   {:prefix "repeat" :cmd-fn audio-commands/toggle-repeat :desc "Toggles repeat-mode. (keeps repeating same song)"}])
 
 (defn help [_]
   (channel-commands/send-message-to-channel! "All available commands:")

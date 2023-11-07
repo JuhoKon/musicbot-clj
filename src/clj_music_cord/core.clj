@@ -20,7 +20,7 @@
     (reset! atoms/discord-gateway-atom client)
     (reset! atoms/player-manager-atom player-manager)
     (reset! atoms/player-atom player)
-    (reset! atoms/track-scheduler scheduler)
+    (reset! atoms/track-scheduler-atom scheduler)
     (reset! atoms/provider-atom provider)
     (reset! atoms/load-handler-atom load-handler-play)
     (reset! atoms/load-handler-atom-playnext load-handler-playnext)

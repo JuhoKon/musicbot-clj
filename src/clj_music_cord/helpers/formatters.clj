@@ -9,10 +9,11 @@
       (str (format "%02d" hours) ":" (format "%02d" minutes) ":" (format "%02d" seconds))
       (str (format "%02d" minutes) ":" (format "%02d" seconds)))))
 
-(defn title-from-info
-  ([info] (title-from-info info false))
-  ([info include-uri?]
-   (let [title (.title info)
+(defn title-from-track
+  ([track] (title-from-track track false))
+  ([track include-uri?]
+   (let [info (.getInfo track)
+         title (.title info)
          ms (.length info)
          uri (.uri info)]
      (if include-uri?

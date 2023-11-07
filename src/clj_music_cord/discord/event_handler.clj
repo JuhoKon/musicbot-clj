@@ -2,7 +2,9 @@
   (:require [clj-music-cord.helpers.java-helpers :as java-helpers]
             [clj-music-cord.shared.atoms :as atoms]
             [clj-music-cord.helpers.d4j :as d4j-helpers]
-            [clojure.string :as str])
+            [clojure.string :as str]
+            [clj-music-cord.commands.audio.commands :as audio-commands]
+            [clj-music-cord.commands.channel.commands :as channel-commands])
   (:import (discord4j.core.event.domain.message MessageCreateEvent)
            (discord4j.core.event.domain VoiceStateUpdateEvent)
            (reactor.core.publisher Mono)))
@@ -27,6 +29,9 @@
               (fn [event]
                 (let [voice-channel @atoms/current-voice-channel-atom]
                   (when (and (or (.. event (isLeaveEvent)) (.. event (isMoveEvent))) (= 1 (.. voice-channel (getVoiceStates) (count) (block))))
-                    (.. voice-channel (sendDisconnectVoiceState) (block)))
+                    (do
+                      (channel-commands/send-message-to-channel! "I'm left alone, so I will leave..")
+                      (audio-commands/stop-and-clear-queue nil)
+                      (.. voice-channel (sendDisconnectVoiceState) (block))))
                   (Mono/empty)))))
         .subscribe)))

@@ -7,9 +7,11 @@
 (def load-handler-atom (atom nil))
 (def load-handler-atom-playnext (atom nil))
 (def player-atom (atom nil))
-(def track-scheduler (atom nil))
+(def track-scheduler-atom (atom nil))
 
 (def current-text-channel-atom (atom nil))
 (def current-voice-channel-atom (atom nil))
 
-(def normal-queue (atom (counted-double-list)))
+(def queue-atom (atom (counted-double-list)))
+
+(def repeat-mode-atom (atom false))

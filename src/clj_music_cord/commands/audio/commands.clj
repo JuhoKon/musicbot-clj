@@ -36,27 +36,34 @@
   (.. @atoms/player-atom (stopTrack)))
 
 (defn skip [event]
-  (channel-commands/send-message-to-channel! "Skipping current track...")
-  (.. @atoms/player-atom (playTrack (first @atoms/normal-queue)))
-  (queue/remove-first-from-queue!))
+  (let [next-track (first @atoms/queue-atom)]
+    (channel-commands/send-message-to-channel! "Skipping current track...")
+    (.. @atoms/player-atom (playTrack (first @atoms/queue-atom)))
+    (queue/remove-first-from-queue!)
+    (when next-track
+      (channel-commands/send-message-to-channel! (str "Now playing: " (formatters/title-from-track next-track false))))))
 
 (defn shuffle-queue [event]
-  (if (empty? @atoms/normal-queue)
+  (if (empty? @atoms/queue-atom)
     (channel-commands/send-message-to-channel! "Queue is empty, won't shuffle an empty list :^)")
     (do
       (queue/shuffle-queue)
-      (channel-commands/send-message-to-channel! (str "Shuffled " (count @atoms/normal-queue) " tracks!")))))
+      (channel-commands/send-message-to-channel! (str "Shuffled " (count @atoms/queue-atom) " tracks!")))))
 
 (defn now-playing [event]
   (let [track (.. @atoms/player-atom (getPlayingTrack))]
     (if track
-      (channel-commands/send-message-to-channel! (str "Now playing: " (formatters/title-from-info (.. track (getInfo)) true)))
+      (channel-commands/send-message-to-channel! (str "Now playing: " (formatters/title-from-track track true)))
       (channel-commands/send-message-to-channel! "Not playing anything."))))
 
 (defn queue-status [event]
-  (if (empty?  @atoms/normal-queue)
+  (if (empty?  @atoms/queue-atom)
     (channel-commands/send-message-to-channel! "The queue is empty.")
     (do
-      (channel-commands/send-message-to-channel! (str "Queue has " (count @atoms/normal-queue) " tracks. Showing the next 15 tracks :^)"))
+      (channel-commands/send-message-to-channel! (str "Queue has " (count @atoms/queue-atom) " tracks. Showing the next 15 tracks :^)"))
       (channel-commands/send-message-to-channel!
-       (str/join "\n > " (map (fn [track] (formatters/title-from-info (.. track (getInfo)) false)) (take 15 @atoms/normal-queue)))))))
+       (str/join "\n > " (map (fn [track] (formatters/title-from-track track false)) (take 15 @atoms/queue-atom)))))))
+
+(defn toggle-repeat [_]
+  (let [new-value (swap! atoms/repeat-mode-atom not)]
+    (channel-commands/send-message-to-channel! (str "Repeat mode: " new-value))))
