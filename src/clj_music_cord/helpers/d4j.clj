@@ -19,7 +19,7 @@
   (let [voice-channel @atoms/current-voice-channel-atom
         discord-gateway @atoms/discord-gateway-atom]
     (when (and voice-channel discord-gateway)
-      (let [user-ids (map (fn [voicestate] (.. voicestate (getMember) (block) (getMemberData) (user) (id)))
+      (let [user-ids (map (fn [voicestate] (.. voicestate (getMember) (block) (getMemberData) (user) (id) (toString)))
                           (.. voice-channel (getVoiceStates) (collectList) (block)))
             bot-id (.. discord-gateway (getSelfId) (asString))]
         (in? user-ids bot-id)))))
