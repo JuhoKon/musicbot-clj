@@ -4,7 +4,7 @@
             [clj-music-cord.helpers.d4j :as d4j-helpers]))
 
 (defn send-message-to-channel! [msg]
-  (.. @atoms/current-text-channel-atom (createMessage msg) (block)))
+  (.. @atoms/current-text-channel-atom (createMessage (str "> " msg)) (block)))
 
 (defn join-voice-channel [event]
   (let [spec-consumer (java-helpers/to-java-consumer @atoms/provider-atom)]
