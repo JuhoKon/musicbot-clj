@@ -31,12 +31,12 @@
                 (.startTrack player first-track true))))
           (if (.getPlayingTrack player)
             (do
-              (channel-commands/send-message-to-channel! (str "Putting stuff to the queue: " (count tracks)))
+              (channel-commands/send-message-to-channel! (str "Inserting tracks to the queue: " (count tracks)))
               (queue/add-playlist-to-queue tracks))
             (do
               (channel-commands/send-message-to-channel! (str "Playing first song from the playlist: " (.title info)))
               (.startTrack player first-track true)
-              (channel-commands/send-message-to-channel! (str "Rest to the queue: " (count (rest tracks))))
+              (channel-commands/send-message-to-channel! (str "Add rest of the playlist to queue: " (count (rest tracks))))
               (queue/add-playlist-to-queue (rest tracks)))))))
 
     (noMatches []
