@@ -1,6 +1,5 @@
 (ns clj-music-cord.audio-components.result-handler
   (:require [clj-music-cord.commands.channel.commands :as channel-commands]
-            [clj-music-cord.shared.atoms :as atoms]
             [clj-music-cord.helpers.formatters :as formatters]
             [clj-music-cord.helpers.queue :as queue])
   (:import (com.sedmelluq.discord.lavaplayer.player AudioLoadResultHandler AudioPlayer)))
@@ -26,14 +25,13 @@
         (let [tracks (.getTracks playlist)
               first-track (first tracks)]
           (if (.isSearchResult playlist)
-            (do
-              (if (.getPlayingTrack player)
-                (do
-                  (channel-commands/send-message-to-channel! (str "Adding to the the queue: " (formatters/title-from-track first-track)))
-                  (add-song-to-queue first-track))
-                (do
-                  (channel-commands/send-message-to-channel! (str "Start playing: " (formatters/title-from-track first-track)))
-                  (.startTrack player first-track true))))
+            (if (.getPlayingTrack player)
+              (do
+                (channel-commands/send-message-to-channel! (str "Adding to the the queue: " (formatters/title-from-track first-track)))
+                (add-song-to-queue first-track))
+              (do
+                (channel-commands/send-message-to-channel! (str "Start playing: " (formatters/title-from-track first-track)))
+                (.startTrack player first-track true)))
             (if (.getPlayingTrack player)
               (do
                 (channel-commands/send-message-to-channel! (str "Inserting tracks to the queue: " (count tracks)))

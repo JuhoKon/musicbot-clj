@@ -35,7 +35,7 @@
   (queue/reset-queue)
   (.. @atoms/player-atom (stopTrack)))
 
-(defn skip [event]
+(defn skip [_]
   (let [next-track (first @atoms/queue-atom)]
     (channel-commands/send-message-to-channel! "Skipping current track...")
     (.. @atoms/player-atom (playTrack (first @atoms/queue-atom)))
@@ -43,20 +43,20 @@
     (when next-track
       (channel-commands/send-message-to-channel! (str "Now playing: " (formatters/title-from-track next-track false))))))
 
-(defn shuffle-queue [event]
+(defn shuffle-queue [_]
   (if (empty? @atoms/queue-atom)
     (channel-commands/send-message-to-channel! "Queue is empty, won't shuffle an empty list :^)")
     (do
       (queue/shuffle-queue)
       (channel-commands/send-message-to-channel! (str "Shuffled " (count @atoms/queue-atom) " tracks!")))))
 
-(defn now-playing [event]
+(defn now-playing [_]
   (let [track (.. @atoms/player-atom (getPlayingTrack))]
     (if track
       (channel-commands/send-message-to-channel! (str "Now playing: " (formatters/title-from-track track true)))
       (channel-commands/send-message-to-channel! "Not playing anything."))))
 
-(defn queue-status [event]
+(defn queue-status [_]
   (if (empty?  @atoms/queue-atom)
     (channel-commands/send-message-to-channel! "The queue is empty.")
     (do
