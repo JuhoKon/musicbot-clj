@@ -1,4 +1,4 @@
-# clj-music-cord
+# Another musicbot for discord
 
 Discord musicbot created in clojure
 
