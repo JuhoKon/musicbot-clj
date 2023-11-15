@@ -1,13 +1,12 @@
-(ns clj-music-cord.helpers.queue
-  (:require [clojure.data.finger-tree :as finger-tree]))
-
-(def queue-by-guild-id (atom {}))
+(ns clj-music-cord.state.guild.queue
+  (:require [clj-music-cord.state.guild.state :as guild-state]
+            [clojure.data.finger-tree :as finger-tree]))
 
 (defn update-queue! [guild-id queue]
-  (swap! queue-by-guild-id assoc guild-id queue))
+  (swap! guild-state/state-by-guild-id assoc-in [guild-id :queue] queue))
 
 (defn get-queue [guild-id]
-  (get @queue-by-guild-id guild-id))
+  (get-in @guild-state/state-by-guild-id [guild-id :queue]))
 
 (defn remove-first-from-queue! [guild-id]
   (update-queue! guild-id (rest (get-queue guild-id))))

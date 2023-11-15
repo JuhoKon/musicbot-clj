@@ -1,8 +1,8 @@
 (ns clj-music-cord.commands.audio.commands
   (:require [clj-music-cord.commands.channel.commands :as channel-commands]
-            [clj-music-cord.shared.atoms :as atoms]
+            [clj-music-cord.state.guild.repeat-mode :as repeat-mode]
             [clojure.string :as str]
-            [clj-music-cord.helpers.queue :as queue]
+            [clj-music-cord.state.guild.queue :as queue]
             [clj-music-cord.helpers.formatters :as formatters]
             [clj-music-cord.audio-components.result-handler :as load-handler]
             [clj-music-cord.helpers.d4j :as d4j-helpers]))
@@ -65,7 +65,7 @@
       (channel-commands/send-message-to-channel! event
                                                  (str/join "\n > " (map (fn [track] (formatters/title-from-track track false)) (take 15 queue)))))))
 
-(defn toggle-repeat [{:keys [event guild-id]}]
-  (let [old-value (atoms/get-repeat-mode guild-id)
-        _ (atoms/update-repeat-mode! guild-id (not old-value))]
-    (channel-commands/send-message-to-channel! event (str "Repeat mode: " (atoms/get-repeat-mode guild-id)))))
+(defn toggle-repeat [{:keys [event guild-id repeat-mode]}]
+  (let [old-value repeat-mode
+        _ (repeat-mode/update-repeat-mode! guild-id (not old-value))]
+    (channel-commands/send-message-to-channel! event (str "Repeat mode: " repeat-mode))))

@@ -1,6 +1,6 @@
 (ns clj-music-cord.helpers.d4j
   (:require [clj-music-cord.helpers.d4j :as d4j-helpers]
-            [clj-music-cord.shared.atoms :as atoms]))
+            [clj-music-cord.state.global :as global]))
 
 (defn get-voice-channel [event]
   (let [member (.. event (getMember) (orElse nil))]
@@ -20,7 +20,7 @@
   (some #(= elm %) coll))
 
 (defn is-bot-in-channel [voice-channel]
-  (let [discord-gateway @atoms/discord-gateway-atom]
+  (let [discord-gateway @global/discord-gateway-atom]
     (when (and voice-channel discord-gateway)
       (let [user-ids (map (fn [voicestate] (.. voicestate (getMember) (block) (getMemberData) (user) (id) (toString)))
                           (.. voice-channel (getVoiceStates) (collectList) (block)))

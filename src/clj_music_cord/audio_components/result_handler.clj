@@ -1,7 +1,7 @@
 (ns clj-music-cord.audio-components.result-handler
   (:require [clj-music-cord.commands.channel.commands :as channel-commands]
             [clj-music-cord.helpers.formatters :as formatters]
-            [clj-music-cord.helpers.queue :as queue])
+            [clj-music-cord.state.guild.queue :as queue])
   (:import (com.sedmelluq.discord.lavaplayer.player AudioLoadResultHandler AudioPlayer)))
 
 (defn load-handler [^AudioPlayer player add-to-front? event guild-id]
