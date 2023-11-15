@@ -14,11 +14,11 @@
     (onTrackEnd [player track endReason]
       (when (.mayStartNext endReason)
         (if (empty? (queue/get-queue guild-id))
-          (when (atoms/repeat-mode-by-guild-id guild-id)
+          (when (atoms/get-repeat-mode guild-id)
             (.startTrack player (.makeClone track) true))
           (let [song (first (queue/get-queue guild-id))]
             (.startTrack player (.makeClone song) true)
-            (if (atoms/repeat-mode-by-guild-id guild-id)
+            (if (atoms/get-repeat-mode guild-id)
               (do
                 (queue/remove-first-from-queue! guild-id)
                 (queue/add-song-to-queue guild-id track))
