@@ -20,7 +20,7 @@
         url (if (is-valid-url? (apply str content-parts))
               (apply str content-parts)
               (str "ytsearch: " (str/join " " content-parts)))]
-    (when-not (d4j-helpers/is-bot-in-channel event)
+    (when-not (d4j-helpers/is-bot-in-channel (d4j-helpers/get-voice-channel event))
       (channel-commands/join-voice-channel {:event event :provider provider}))
     (channel-commands/send-message-to-channel! event "Loading track(s)...")
     (.. player-manager (loadItem url handler))))

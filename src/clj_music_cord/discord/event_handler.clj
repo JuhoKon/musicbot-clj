@@ -1,5 +1,6 @@
 (ns clj-music-cord.discord.event-handler
   (:require [clj-music-cord.audio-components.setup :refer [setup-audio-components]]
+            [clj-music-cord.helpers.d4j :as d4j-helpers]
             [clj-music-cord.helpers.java-helpers :as java-helpers]
             [clj-music-cord.helpers.queue :as queue]
             [clj-music-cord.shared.atoms :as atoms]
@@ -31,13 +32,18 @@
     (-> (.on dispatcher VoiceStateUpdateEvent
              (java-helpers/clojure-fn-to-java-function
               (fn [event]
-                #_(when-let [voice-channel @atoms/current-voice-channel-atom]
-                    (when (and (or (.. event (isLeaveEvent)) (.. event (isMoveEvent)))
-                               (= 1 (.. voice-channel (getVoiceStates) (count) (block)))
-                               (d4j-helpers/is-bot-in-channel))
-                      (reset! atoms/current-voice-channel-atom nil)
-                      #_(channel-commands/send-message-to-channel! "I'm left alone, so I will leave..")
-                      (audio-commands/stop-and-clear-queue nil)
-                      (.. voice-channel (sendDisconnectVoiceState) (block))))
+                (let [voice-state (.. event (getOld) (orElse nil))]
+                  (when voice-state
+                    (let [channel (.. voice-state (getChannel) (block))
+                          guild-id (.. voice-state (getGuildId))
+                          {:keys [player]} (setup-audio-components guild-id)]
+                      (when channel
+                        (when (and (or (.. event (isLeaveEvent)) (.. event (isMoveEvent)))
+                                   (= 1 (.. channel (getVoiceStates) (count) (block)))
+                                   (d4j-helpers/is-bot-in-channel channel))
+                          (queue/reset-queue guild-id)
+                          (.. player (stopTrack))
+                          (.. channel (sendDisconnectVoiceState) (block)))
+                        channel))))
                 (Mono/empty))))
         .subscribe)))

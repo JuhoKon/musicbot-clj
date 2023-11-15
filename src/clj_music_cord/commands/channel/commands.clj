@@ -10,7 +10,7 @@
     (.. (d4j-helpers/get-voice-channel event) (join spec-consumer) (block))))
 
 (defn leave-voice-channel [{:keys [event]}]
-  (if (d4j-helpers/is-bot-in-channel event)
+  (if (d4j-helpers/is-bot-in-channel (d4j-helpers/get-voice-channel event))
     (do
       (send-message-to-channel! event "Leaving...")
       (.. (d4j-helpers/get-voice-channel event) (sendDisconnectVoiceState) (block)))

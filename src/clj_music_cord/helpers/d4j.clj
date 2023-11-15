@@ -19,9 +19,8 @@
   [coll elm]
   (some #(= elm %) coll))
 
-(defn is-bot-in-channel [event]
-  (let [voice-channel (d4j-helpers/get-voice-channel event)
-        discord-gateway @atoms/discord-gateway-atom]
+(defn is-bot-in-channel [voice-channel]
+  (let [discord-gateway @atoms/discord-gateway-atom]
     (when (and voice-channel discord-gateway)
       (let [user-ids (map (fn [voicestate] (.. voicestate (getMember) (block) (getMemberData) (user) (id) (toString)))
                           (.. voice-channel (getVoiceStates) (collectList) (block)))
