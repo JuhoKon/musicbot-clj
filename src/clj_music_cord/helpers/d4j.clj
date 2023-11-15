@@ -1,5 +1,6 @@
 (ns clj-music-cord.helpers.d4j
-  (:require [clj-music-cord.shared.atoms :as atoms]))
+  (:require [clj-music-cord.helpers.d4j :as d4j-helpers]
+            [clj-music-cord.shared.atoms :as atoms]))
 
 (defn get-voice-channel [event]
   (let [member (.. event (getMember) (orElse nil))]
@@ -10,13 +11,16 @@
             (when channel
               channel)))))))
 
+(defn get-text-channel [event]
+  (.. event (getMessage) (getChannel) (block)))
+
 (defn in?
   "true if coll contains elm"
   [coll elm]
   (some #(= elm %) coll))
 
-(defn is-bot-in-channel []
-  (let [voice-channel @atoms/current-voice-channel-atom
+(defn is-bot-in-channel [event]
+  (let [voice-channel (d4j-helpers/get-voice-channel event)
         discord-gateway @atoms/discord-gateway-atom]
     (when (and voice-channel discord-gateway)
       (let [user-ids (map (fn [voicestate] (.. voicestate (getMember) (block) (getMemberData) (user) (id) (toString)))

@@ -1,24 +1,31 @@
 (ns clj-music-cord.helpers.queue
-  (:require [clj-music-cord.shared.atoms :as atoms])
-  (:use [clojure.data.finger-tree :only [counted-double-list conjl]]))
+  (:require [clojure.data.finger-tree :as finger-tree]))
 
-(defn remove-first-from-queue! []
-  (swap! atoms/queue-atom rest))
+(def queue-by-guild-id (atom {}))
 
-(defn add-playlist-to-queue [tracks]
-  (swap! atoms/queue-atom (fn [value] (reduce conj value tracks))))
+(defn update-queue! [guild-id queue]
+  (swap! queue-by-guild-id assoc guild-id queue))
 
-(defn add-song-to-queue [track]
-  (swap! atoms/queue-atom conj track))
+(defn get-queue [guild-id]
+  (get @queue-by-guild-id guild-id))
 
-(defn add-playlist-to-queue-front [tracks]
-  (swap! atoms/queue-atom (fn [value] (reduce conjl value tracks))))
+(defn remove-first-from-queue! [guild-id]
+  (update-queue! guild-id (rest (get-queue guild-id))))
 
-(defn add-song-to-queue-front [track]
-  (swap! atoms/queue-atom conjl track))
+(defn add-playlist-to-queue [guild-id tracks]
+  (update-queue! guild-id (reduce conj (get-queue guild-id) tracks)))
 
-(defn reset-queue []
-  (reset! atoms/queue-atom (counted-double-list)))
+(defn add-song-to-queue [guild-id track]
+  (update-queue! guild-id (conj (get-queue guild-id) track)))
 
-(defn shuffle-queue []
-  (swap! atoms/queue-atom #(reduce conj (counted-double-list) (shuffle (vec %)))))
+(defn add-playlist-to-queue-front [guild-id tracks]
+  (update-queue! guild-id (reduce finger-tree/conjl (get-queue guild-id) tracks)))
+
+(defn add-song-to-queue-front [guild-id track]
+  (update-queue! guild-id (finger-tree/conjl (get-queue guild-id) track)))
+
+(defn reset-queue [guild-id]
+  (update-queue! guild-id (finger-tree/counted-double-list)))
+
+(defn shuffle-queue [guild-id]
+  (update-queue! guild-id (reduce conj (finger-tree/counted-double-list) (shuffle (vec (get-queue guild-id))))))

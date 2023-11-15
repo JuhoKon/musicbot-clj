@@ -3,7 +3,7 @@
   (:require [clj-music-cord.shared.atoms :as atoms]
             [clj-music-cord.helpers.queue :as queue]))
 
-(def track-scheduler
+(defn track-scheduler [guild-id]
   (proxy [AudioEventAdapter] []
     (onPlayerPause [player])
 
@@ -13,21 +13,21 @@
 
     (onTrackEnd [player track endReason]
       (when (.mayStartNext endReason)
-        (if (empty? @atoms/queue-atom)
-          (when @atoms/repeat-mode-atom
+        (if (empty? (queue/get-queue guild-id))
+          (when (atoms/repeat-mode-by-guild-id guild-id)
             (.startTrack player (.makeClone track) true))
-          (let [song (first @atoms/queue-atom)]
+          (let [song (first (queue/get-queue guild-id))]
             (.startTrack player (.makeClone song) true)
-            (if @atoms/repeat-mode-atom
+            (if (atoms/repeat-mode-by-guild-id guild-id)
               (do
-                (queue/remove-first-from-queue!)
-                (queue/add-song-to-queue track))
-              (queue/remove-first-from-queue!))))))
+                (queue/remove-first-from-queue! guild-id)
+                (queue/add-song-to-queue guild-id track))
+              (queue/remove-first-from-queue! guild-id))))))
 
     (onTrackException [player track exception])
 
     (onTrackStuck [player track thresholdMs]
-      (when-not (empty? @atoms/queue-atom)
-        (let [song (first @atoms/queue-atom)]
+      (when-not (empty? (queue/get-queue guild-id))
+        (let [song (first (queue/get-queue guild-id))]
           (.startTrack player (.makeClone song) true)
-          (queue/remove-first-from-queue!))))))
+          (queue/remove-first-from-queue! guild-id))))))

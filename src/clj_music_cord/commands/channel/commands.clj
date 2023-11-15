@@ -1,21 +1,20 @@
 (ns clj-music-cord.commands.channel.commands
   (:require [clj-music-cord.helpers.java-helpers :as java-helpers]
-            [clj-music-cord.shared.atoms :as atoms]
             [clj-music-cord.helpers.d4j :as d4j-helpers]))
 
-(defn send-message-to-channel! [msg]
-  (.. @atoms/current-text-channel-atom (createMessage (str "> " msg)) (block)))
+(defn send-message-to-channel! [event msg]
+  (.. (d4j-helpers/get-text-channel event) (createMessage (str "> " msg)) (block)))
 
-(defn join-voice-channel [_]
-  (let [spec-consumer (java-helpers/to-java-consumer @atoms/provider-atom)]
-    (.. @atoms/current-voice-channel-atom (join spec-consumer) (block))))
+(defn join-voice-channel [{:keys [event provider]}]
+  (let [spec-consumer (java-helpers/to-java-consumer provider)]
+    (.. (d4j-helpers/get-voice-channel event) (join spec-consumer) (block))))
 
-(defn leave-voice-channel [_]
-  (if (d4j-helpers/is-bot-in-channel)
+(defn leave-voice-channel [{:keys [event]}]
+  (if (d4j-helpers/is-bot-in-channel event)
     (do
-      (send-message-to-channel! "Leaving...")
-      (.. @atoms/current-voice-channel-atom (sendDisconnectVoiceState) (block)))
-    (send-message-to-channel! "Not in a voice channel :^)")))
+      (send-message-to-channel! event "Leaving...")
+      (.. (d4j-helpers/get-voice-channel event) (sendDisconnectVoiceState) (block)))
+    (send-message-to-channel! event "Not in a voice channel :^)")))
 
-(defn ping [_]
-  (send-message-to-channel! "pong!"))
+(defn ping [{:keys [event]}]
+  (send-message-to-channel! event "pong!"))

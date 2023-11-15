@@ -16,10 +16,10 @@
    {:prefix "queue" :cmd-fn audio-commands/queue-status :desc "Shows next (15) tracks in the queue."}
    {:prefix "repeat" :cmd-fn audio-commands/toggle-repeat :desc "Repeats the queue."}])
 
-(defn help [_]
-  (channel-commands/send-message-to-channel! "All available commands:")
-  (channel-commands/send-message-to-channel!
-   (str/join "\n > " (map (fn [command] (str "**!" (:prefix command) "** - " (:desc command))) normal-cmds))))
+(defn help [{:keys [event]}]
+  (channel-commands/send-message-to-channel! event "All available commands:")
+  (channel-commands/send-message-to-channel! event
+                                             (str/join "\n > " (map (fn [command] (str "**!" (:prefix command) "** - " (:desc command))) normal-cmds))))
 
 (def commands
   (conj normal-cmds {:prefix "help" :cmd-fn help :desc "Lists available commands"}))

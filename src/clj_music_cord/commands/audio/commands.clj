@@ -4,6 +4,7 @@
             [clojure.string :as str]
             [clj-music-cord.helpers.queue :as queue]
             [clj-music-cord.helpers.formatters :as formatters]
+            [clj-music-cord.audio-components.result-handler :as load-handler]
             [clj-music-cord.helpers.d4j :as d4j-helpers]))
 
 (defn is-valid-url? [str]
@@ -13,57 +14,58 @@
     (catch Exception _
       false)))
 
-(defn play-track-fn [event handler]
+(defn play-track-fn [event handler player-manager provider]
   (let [content (.. event getMessage getContent)
         content-parts (rest (str/split content #" "))
         url (if (is-valid-url? (apply str content-parts))
               (apply str content-parts)
               (str "ytsearch: " (str/join " " content-parts)))]
-    (when-not (d4j-helpers/is-bot-in-channel)
-      (channel-commands/join-voice-channel nil))
-    (channel-commands/send-message-to-channel! "Loading track(s)...")
-    (.. @atoms/player-manager-atom (loadItem url handler))))
+    (when-not (d4j-helpers/is-bot-in-channel event)
+      (channel-commands/join-voice-channel {:event event :provider provider}))
+    (channel-commands/send-message-to-channel! event "Loading track(s)...")
+    (.. player-manager (loadItem url handler))))
 
-(defn play-track [event]
-  (play-track-fn event @atoms/load-handler-atom))
+(defn play-track [{:keys [event player provider player-manager guild-id]}]
+  (play-track-fn event (load-handler/load-handler player false event guild-id) player-manager provider))
 
-(defn play-track-next [event]
-  (play-track-fn event @atoms/load-handler-atom-playnext))
+(defn play-track-next [{:keys [event player provider player-manager guild-id]}]
+  (play-track-fn event (load-handler/load-handler player true event guild-id) player-manager provider))
 
-(defn stop-and-clear-queue [_]
-  (channel-commands/send-message-to-channel! "Stopping music and clearing queue...")
-  (queue/reset-queue)
-  (.. @atoms/player-atom (stopTrack)))
+(defn stop-and-clear-queue [{:keys [event player guild-id]}]
+  (channel-commands/send-message-to-channel! event "Stopping music and clearing queue...")
+  (queue/reset-queue guild-id)
+  (.. player (stopTrack)))
 
-(defn skip [_]
-  (let [next-track (first @atoms/queue-atom)]
-    (channel-commands/send-message-to-channel! "Skipping current track...")
-    (.. @atoms/player-atom (playTrack (first @atoms/queue-atom)))
-    (queue/remove-first-from-queue!)
+(defn skip [{:keys [event player guild-id queue]}]
+  (let [next-track (first queue)]
+    (channel-commands/send-message-to-channel! event "Skipping current track...")
+    (.. player (playTrack (first queue)))
+    (queue/remove-first-from-queue! guild-id)
     (when next-track
-      (channel-commands/send-message-to-channel! (str "Now playing: " (formatters/title-from-track next-track false))))))
+      (channel-commands/send-message-to-channel! event (str "Now playing: " (formatters/title-from-track next-track false))))))
 
-(defn shuffle-queue [_]
-  (if (empty? @atoms/queue-atom)
-    (channel-commands/send-message-to-channel! "Queue is empty, won't shuffle an empty list :^)")
+(defn shuffle-queue [{:keys [event guild-id queue]}]
+  (if (empty? queue)
+    (channel-commands/send-message-to-channel! event "Queue is empty, won't shuffle an empty list :^)")
     (do
-      (queue/shuffle-queue)
-      (channel-commands/send-message-to-channel! (str "Shuffled " (count @atoms/queue-atom) " tracks!")))))
+      (queue/shuffle-queue guild-id)
+      (channel-commands/send-message-to-channel! event (str "Shuffled " (count queue) " tracks!")))))
 
-(defn now-playing [_]
-  (let [track (.. @atoms/player-atom (getPlayingTrack))]
+(defn now-playing [{:keys [event player]}]
+  (let [track (.. player (getPlayingTrack))]
     (if track
-      (channel-commands/send-message-to-channel! (str "Now playing: " (formatters/title-from-track track true)))
-      (channel-commands/send-message-to-channel! "Not playing anything."))))
+      (channel-commands/send-message-to-channel! event (str "Now playing: " (formatters/title-from-track track true)))
+      (channel-commands/send-message-to-channel! event "Not playing anything."))))
 
-(defn queue-status [_]
-  (if (empty?  @atoms/queue-atom)
-    (channel-commands/send-message-to-channel! "The queue is empty.")
+(defn queue-status [{:keys [event queue]}]
+  (if (empty? queue)
+    (channel-commands/send-message-to-channel! event "The queue is empty.")
     (do
-      (channel-commands/send-message-to-channel! (str "Queue has " (count @atoms/queue-atom) " tracks. Showing the next 15 tracks if available :^)"))
-      (channel-commands/send-message-to-channel!
-       (str/join "\n > " (map (fn [track] (formatters/title-from-track track false)) (take 15 @atoms/queue-atom)))))))
+      (channel-commands/send-message-to-channel! event (str "Queue has " (count queue) " tracks. Showing the next 15 tracks if available :^)"))
+      (channel-commands/send-message-to-channel! event
+                                                 (str/join "\n > " (map (fn [track] (formatters/title-from-track track false)) (take 15 queue)))))))
 
-(defn toggle-repeat [_]
-  (let [new-value (swap! atoms/repeat-mode-atom not)]
-    (channel-commands/send-message-to-channel! (str "Repeat mode: " new-value))))
+(defn toggle-repeat [{:keys [event guild-id]}]
+  (let [old-value (atoms/get-repeat-mode guild-id)
+        _ (atoms/update-repeat-mode! guild-id (not old-value))]
+    (channel-commands/send-message-to-channel! event (str "Repeat mode: " (atoms/get-repeat-mode guild-id)))))
