@@ -80,8 +80,8 @@
     (try
       (let [volume (Integer. args)]
         (cond
-          (> volume 151) (channel-commands/send-message-to-channel! event "Volume can be set to 0-150.")
-          (< volume 0) (channel-commands/send-message-to-channel! event "Volume can be set to 0-150.")
+          (> volume 1000) (channel-commands/send-message-to-channel! event "Volume can be set to 0-1000.")
+          (< volume 0) (channel-commands/send-message-to-channel! event "Volume can be set to 0-1000.")
           :else
           (do
             (channel-commands/send-message-to-channel! event (str "Setting volume to: " volume))
