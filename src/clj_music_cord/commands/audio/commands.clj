@@ -67,5 +67,24 @@
 
 (defn toggle-repeat [{:keys [event guild-id repeat-mode]}]
   (let [old-value repeat-mode
+        new-value (not old-value)
         _ (repeat-mode/update-repeat-mode! guild-id (not old-value))]
-    (channel-commands/send-message-to-channel! event (str "Repeat mode: " repeat-mode))))
+    (channel-commands/send-message-to-channel! event (str "Repeat mode: " new-value))))
+
+(defn get-volume [{:keys [event player]}]
+  (channel-commands/send-message-to-channel! event (str "Current volume: " (.. player (getVolume)))))
+
+(defn set-volume [{:keys [event player]}]
+  (let [content (.. event getMessage getContent)
+        args (apply str (rest (str/split content #" ")))]
+    (try
+      (let [volume (Integer. args)]
+        (cond
+          (> volume 151) (channel-commands/send-message-to-channel! event "Volume can be set to 0-150.")
+          (< volume 0) (channel-commands/send-message-to-channel! event "Volume can be set to 0-150.")
+          :else
+          (do
+            (channel-commands/send-message-to-channel! event (str "Setting volume to: " volume))
+            (.setVolume player volume))))
+      (catch Exception _
+        (channel-commands/send-message-to-channel! event "Please give a valid number")))))

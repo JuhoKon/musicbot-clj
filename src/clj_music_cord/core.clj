@@ -13,9 +13,9 @@
 
     (global/set-atoms! client)
     (discord-event-handler/subscribe-to-message-events commands/commands)
-    (-> client
-        (.onDisconnect)
-        (.block))))
+    #_(-> client
+          (.onDisconnect)
+          (.block))))
 
 (comment
   (-main)
