@@ -23,7 +23,7 @@
    {:prefix "queue" :cmd-fn audio-commands/queue-status :desc "Shows next (15) tracks in the queue."}
    {:prefix "repeat" :cmd-fn audio-commands/toggle-repeat :desc "Repeats the queue."}
    {:prefix "volume" :cmd-fn audio-commands/get-volume :desc "Gets the current volume for the player."}
-   {:prefix "setvolume" :cmd-fn audio-commands/set-volume :desc "Sets the current volume for the player (0-150)."}])
+   {:prefix "setvolume" :cmd-fn audio-commands/set-volume :desc "Sets the current volume for the player (0-1000)."}])
 
 (defn help [{:keys [event]}]
   (channel-commands/send-message-to-channel! event "All available commands:")

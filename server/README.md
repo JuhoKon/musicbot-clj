@@ -1,6 +1,34 @@
-# Fullstack clojure project
+# Musicbot server
 
-Project stub for fullstack development with Clojure + ClojureScript (reagent + re-frame).
+Musicbot server (stub) created in Clojure (supports discord)
+
+## Installation
+
+TODO
+
+## Usage
+
+Create token.txt - file. Put bot token inside it.
+
+FIXME: explanation
+
+    $ java -jar clj-music-cord-0.1.0-standalone.jar [args]
+
+## Options
+
+FIXME: listing of options this app accepts.
+
+## Examples
+
+...
+
+### Bugs
+
+...
+
+### Any Other Sections
+### That You Think
+### Might be Useful
 
 ## License
 
