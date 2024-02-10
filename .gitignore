@@ -43,3 +43,9 @@ client!/.clj-kondo/config.edn
 
 # clojure-lsp cache
 client/.lsp/.cache
+
+# Base
+
+.clj-kondo/*
+.lsp/*
+.DS_Store

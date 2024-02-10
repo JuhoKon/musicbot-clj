@@ -12,7 +12,7 @@
 
 ;; Subs
 
-(re-frame/reg-sub
- ::header
- (fn [db]
-   (get-in db header-path)))
+(defn get-header [db]
+  (get-in db header-path))
+
+(re-frame/reg-sub ::header get-header)
