@@ -1,6 +1,10 @@
 # Fullstack clojure project
 
-Project stub for fullstack development with Clojure + ClojureScript (reagent + re-frame).
+Project stub for fullstack development with Clojure + ClojureScript (reagent + re-frame). 
+
+Currently has a template for SPA application and a working discord bot for streaming music with some basic functionalities. 
+
+TODO: enable discord bot controls from browser
 
 ## License
 
