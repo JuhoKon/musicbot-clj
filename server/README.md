@@ -1,34 +1,18 @@
-# Musicbot server
+# Musicbot server for discord
 
-Musicbot server (stub) created in Clojure (supports discord)
+Musicbot server created in Clojure (supports discord). Streams music and has some basic functionalities such as playlists and queues. 
 
 ## Installation
 
-TODO
+Create token.txt - file. Put bot token inside it.
 
+    $ lein repl
+    
 ## Usage
 
 Create token.txt - file. Put bot token inside it.
 
-FIXME: explanation
-
     $ java -jar clj-music-cord-0.1.0-standalone.jar [args]
-
-## Options
-
-FIXME: listing of options this app accepts.
-
-## Examples
-
-...
-
-### Bugs
-
-...
-
-### Any Other Sections
-### That You Think
-### Might be Useful
 
 ## License
 
