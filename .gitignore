@@ -1,17 +1,51 @@
-/target
-/classes
-/checkouts
-profiles.clj
-pom.xml
-pom.xml.asc
-*.jar
-*.class
-/.lein-*
-/.nrepl-port
-/.prepl-port
-.hgignore
-.hg/
-/.clj-kondo
-/.lsp
-/.calva
-token.txt
+# server 
+server/target
+server/classes
+server/checkouts
+server/profiles.clj
+server/pom.xml
+server/pom.xml.asc
+server/*.jar
+server/*.class
+server/.lein-*
+server/.nrepl-port
+server/.prepl-port
+server/.hgignore
+server/.hg/
+server/.clj-kondo
+server/.lsp
+server/.calva
+server/token.txt
+server/resources
+
+# client
+client/out/
+client/resources/public/js/compiled/
+client/target/
+client/*-init.clj
+client/*.log
+
+# Leiningen
+client/.lein-*
+client/.nrepl-port
+
+# Node.js dependencies
+client/node_modules/
+
+# shadow-cljs cache, port files
+client/.shadow-cljs/
+
+# clj-kondo cache and configs from libs
+client/.clj-kondo/*
+
+# clj-kondo config
+client!/.clj-kondo/config.edn
+
+# clojure-lsp cache
+client/.lsp/.cache
+
+# Base
+
+.clj-kondo/*
+.lsp/*
+.DS_Store

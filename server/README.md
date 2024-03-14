@@ -1,10 +1,18 @@
-# Fullstack clojure project
+# Musicbot server for discord
 
-Project stub for fullstack development with Clojure + ClojureScript (reagent + re-frame). 
+Musicbot server created in Clojure (supports discord). Streams music and has some basic functionalities such as playlists and queues. 
 
-Currently has a template for SPA application and a working discord bot for streaming music with some basic functionalities. 
+## Installation
 
-TODO: enable discord bot controls from browser
+Create token.txt - file. Put bot token inside it.
+
+    $ lein repl
+    
+## Usage
+
+Create token.txt - file. Put bot token inside it.
+
+    $ java -jar clj-music-cord-0.1.0-standalone.jar [args]
 
 ## License
 
