@@ -8,8 +8,9 @@
                  [org.slf4j/slf4j-simple "2.0.9"]
                  [com.discord4j/discord4j-core "3.3.0-RC1"]
                  [com.fasterxml.jackson.core/jackson-core "2.15.0"]
-                 [dev.arbjerg/lavaplayer "1.5.1"]]
-  :repositories {"lavaplayer-repo" "https://jitpack.io"}
+                 [dev.arbjerg/lavaplayer "727959e9f621fc457b3a5adafcfffb55fdeaa538-SNAPSHOT"]]
+  :repositories {"custom-repo" "https://jitpack.io"
+                 "lavaplayer-repo" "https://s01.oss.sonatype.org/content/repositories/snapshots"}
   :main ^:skip-aot clj-music-cord.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all
